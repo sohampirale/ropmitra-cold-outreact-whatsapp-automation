@@ -38,7 +38,7 @@ export class EvolutionService {
     }
 
     try {
-      // First ensure instance exists
+      // First ensure instance exists (supports both Evolution API v1 and v2)
       try {
         await axios.post(
           `${EVOLUTION_API_URL}/instance/create`,
@@ -46,8 +46,9 @@ export class EvolutionService {
             instanceName,
             token: instanceName,
             qrcode: true,
+            integration: 'WHATSAPP-BAILEYS',
           },
-          { headers: this.getHeaders(), timeout: 5000 }
+          { headers: this.getHeaders(), timeout: 8000 }
         );
       } catch (err: any) {
         // Instance might already exist, which is fine
@@ -56,16 +57,20 @@ export class EvolutionService {
       // Get connection QR code or status
       const res = await axios.get(
         `${EVOLUTION_API_URL}/instance/connect/${instanceName}`,
-        { headers: this.getHeaders(), timeout: 5000 }
+        { headers: this.getHeaders(), timeout: 8000 }
       );
 
       const data = res.data;
-      if (data?.instance?.state === 'open') {
+      if (data?.instance?.state === 'open' || data?.state === 'open') {
         dbManager.updateInstanceStatus(instanceName, 'open', null, data?.instance?.owner || null);
         return { status: 'open', qrCode: null, phoneConnected: data?.instance?.owner };
       }
 
-      const qr = data?.base64 || data?.qrcode?.base64 || null;
+      let qr = data?.base64 || data?.qrcode?.base64 || null;
+      if (qr && !qr.startsWith('data:image')) {
+        qr = `data:image/png;base64,${qr}`;
+      }
+
       dbManager.updateInstanceStatus(instanceName, 'connecting', qr);
       return { status: 'connecting', qrCode: qr };
     } catch (error: any) {
