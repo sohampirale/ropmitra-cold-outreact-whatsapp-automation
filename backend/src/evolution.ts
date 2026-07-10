@@ -179,17 +179,21 @@ export class EvolutionService {
         success: true,
       };
     } catch (err: any) {
-      // If Evolution API responded with an error (e.g., 401 logged out, 400 bad instance), throw it clearly!
+      // If Evolution API responded with an HTTP error, throw it clearly!
       if (err.response) {
         const errMsg = err.response.data?.response?.message || err.response.data?.error || err.message;
         throw new Error(`Evolution API Error (${err.response.status}): ${JSON.stringify(errMsg)}`);
       }
-      // Only simulate delivery if the Evolution API server is completely unreachable (ECONNREFUSED)
-      console.warn(`[Evolution API server offline/ECONNREFUSED] Simulating delivery to ${cleanPhone} via ${instanceName}`);
-      return {
-        id: `FALLBACK_${Date.now()}`,
-        success: true,
-      };
+      // If the error is ECONNREFUSED (Evolution API server is completely down), allow fallback simulation
+      if (err.code === 'ECONNREFUSED') {
+        console.warn(`[Evolution API server offline (ECONNREFUSED)] Simulating delivery to ${cleanPhone} via ${instanceName}`);
+        return {
+          id: `FALLBACK_${Date.now()}`,
+          success: true,
+        };
+      }
+      // Otherwise (e.g. timeout ECONNABORTED or connection dropped because instance is closed), throw real error!
+      throw new Error(`Failed to send via Evolution API (${err.code || 'ERROR'}): ${err.message}`);
     }
   }
 }
