@@ -1,0 +1,33 @@
+{
+  "name": "ropmitra-cold-outreach-whatsapp-automation",
+  "version": "1.0.0",
+  "description": "WhatsApp Cold Outreach Automation using Evolution API and lightweight SQLite queue worker",
+  "main": "backend/src/index.ts",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "tsx watch backend/src/index.ts",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "tsx backend/src/index.ts"
+  },
+  "dependencies": {
+    "axios": "^1.7.4",
+    "better-sqlite3": "^11.1.2",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
+    "csv-stringify": "^6.5.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^22.5.4",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  }
+}
