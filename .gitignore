@@ -4,5 +4,9 @@ build
 .env
 data/*.db
 data/*.db-journal
+data/*.db-shm
+data/*.db-wal
+evolution_pgdata
+evolution_instances
 *.log
 .DS_Store
