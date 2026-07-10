@@ -62,8 +62,8 @@ export class EvolutionService {
 
       const data = res.data;
       if (data?.instance?.state === 'open' || data?.state === 'open') {
-        dbManager.updateInstanceStatus(instanceName, 'open', null, data?.instance?.owner || null);
-        return { status: 'open', qrCode: null, phoneConnected: data?.instance?.owner };
+        const stateInfo = await this.getConnectionState(instanceName);
+        return { status: 'open', qrCode: null, phoneConnected: stateInfo.phoneConnected };
       }
 
       let qr = data?.base64 || data?.qrcode?.base64 || null;
@@ -97,16 +97,25 @@ export class EvolutionService {
 
     try {
       const res = await axios.get(
-        `${EVOLUTION_API_URL}/instance/connectionState/${instanceName}`,
+        `${EVOLUTION_API_URL}/instance/fetchInstances?instanceName=${instanceName}`,
         { headers: this.getHeaders(), timeout: 5000 }
       );
-      const state = res.data?.instance?.state || res.data?.state || 'disconnected';
+      const instanceObj = Array.isArray(res.data) ? res.data[0] : res.data?.instance || res.data;
+      const state = instanceObj?.connectionStatus || instanceObj?.state || 'disconnected';
       const status = state === 'open' ? 'open' : state === 'connecting' ? 'connecting' : 'disconnected';
-      dbManager.updateInstanceStatus(instanceName, status);
-      return { status };
+
+      let phoneConnected: string | undefined = undefined;
+      const ownerJid = instanceObj?.ownerJid || instanceObj?.owner || instanceObj?.number;
+      if (ownerJid) {
+        const rawNum = String(ownerJid).split('@')[0].replace(/[^0-9]/g, '');
+        phoneConnected = rawNum ? `+${rawNum}` : undefined;
+      }
+
+      dbManager.updateInstanceStatus(instanceName, status, null, phoneConnected || null);
+      return { status, phoneConnected };
     } catch (error: any) {
       const existing = dbManager.getInstance(instanceName);
-      return { status: existing?.status || 'disconnected' };
+      return { status: existing?.status || 'disconnected', phoneConnected: existing?.phone_connected || undefined };
     }
   }
 
@@ -170,7 +179,13 @@ export class EvolutionService {
         success: true,
       };
     } catch (err: any) {
-      console.warn(`[Evolution API offline] Simulating delivery to ${cleanPhone} via ${instanceName}`);
+      // If Evolution API responded with an error (e.g., 401 logged out, 400 bad instance), throw it clearly!
+      if (err.response) {
+        const errMsg = err.response.data?.response?.message || err.response.data?.error || err.message;
+        throw new Error(`Evolution API Error (${err.response.status}): ${JSON.stringify(errMsg)}`);
+      }
+      // Only simulate delivery if the Evolution API server is completely unreachable (ECONNREFUSED)
+      console.warn(`[Evolution API server offline/ECONNREFUSED] Simulating delivery to ${cleanPhone} via ${instanceName}`);
       return {
         id: `FALLBACK_${Date.now()}`,
         success: true,
