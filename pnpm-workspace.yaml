@@ -7,3 +7,6 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   protobufjs: true
+
+patchedDependencies:
+  whatsapp-rust-bridge@0.5.4: patches/whatsapp-rust-bridge@0.5.4.patch
