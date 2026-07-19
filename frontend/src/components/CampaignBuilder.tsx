@@ -122,16 +122,16 @@ export const CampaignBuilder: React.FC<Props> = ({
 
       {/* Connection warning if not connected */}
       {activeUser.instanceStatus !== 'open' && (
-        <div className="flex items-center justify-between rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-300">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-amber-300">
           <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-amber-400 shrink-0" />
             <div className="text-xs">
               <span className="font-semibold">WhatsApp is not linked yet for "{activeUser.name}".</span> Messages will stay queued until your WhatsApp is scanned or connected.
             </div>
           </div>
           <button
             onClick={onOpenConnectModal}
-            className="rounded-xl bg-amber-500 px-3.5 py-1.5 text-xs font-semibold text-dark-900 hover:brightness-110 transition-all"
+            className="self-start sm:self-auto shrink-0 rounded-xl bg-amber-500 px-3.5 py-1.5 text-xs font-semibold text-dark-900 hover:brightness-110 transition-all"
           >
             Scan QR Now
           </button>

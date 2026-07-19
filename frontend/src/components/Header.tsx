@@ -43,39 +43,65 @@ export const Header: React.FC<Props> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-dark-900/80 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-green to-brand-emerald shadow-glow-green text-dark-900 font-bold">
-              <MessageSquare className="h-6 w-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold tracking-tight text-white">
-                  ROPMITRA
-                </span>
-                <span className="rounded-full bg-brand-green/10 border border-brand-green/30 px-2 py-0.5 text-[10px] font-semibold text-brand-green uppercase tracking-wider">
-                  Outreach AI
-                </span>
-                {isMockMode && (
-                  <span className="rounded-full bg-brand-cyan/10 border border-brand-cyan/30 px-2 py-0.5 text-[10px] font-semibold text-brand-cyan">
-                    Dev Mock
-                  </span>
-                )}
+    <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-dark-900/90 backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:h-16 py-2.5 md:py-0 items-stretch md:items-center justify-between gap-2.5 md:gap-0">
+          {/* Top Row / Logo & Brand */}
+          <div className="flex items-center justify-between md:justify-start gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-brand-green to-brand-emerald shadow-glow-green text-dark-900 font-bold">
+                <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
               </div>
-              <p className="text-[11px] text-slate-400">
-                Lightweight Evolution API & SQLite Background Worker
-              </p>
+              <div>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-sm sm:text-base font-bold tracking-tight text-white">
+                    ROPMITRA
+                  </span>
+                  <span className="rounded-full bg-brand-green/10 border border-brand-green/30 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-brand-green uppercase tracking-wider">
+                    Outreach AI
+                  </span>
+                  {isMockMode && (
+                    <span className="rounded-full bg-brand-cyan/10 border border-brand-cyan/30 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-semibold text-brand-cyan">
+                      Dev Mock
+                    </span>
+                  )}
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block">
+                  Lightweight Evolution API & SQLite Background Worker
+                </p>
+              </div>
             </div>
+
+            {/* Mobile-only Connect Button */}
+            {activeUser && (
+              <button
+                onClick={onOpenConnectModal}
+                className={`flex md:hidden items-center gap-1.5 rounded-xl border px-2.5 py-1 text-[11px] font-semibold transition-all shrink-0 ${
+                  activeUser.instanceStatus === 'open'
+                    ? 'border-brand-green/40 bg-brand-green/10 text-brand-green'
+                    : 'border-amber-500/40 bg-amber-500/10 text-amber-400'
+                }`}
+              >
+                {activeUser.instanceStatus === 'open' ? (
+                  <>
+                    <Wifi className="h-3.5 w-3.5 text-brand-green animate-pulse" />
+                    <span>Connected</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Connect QR</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
-          {/* Navigation Tabs */}
+          {/* Desktop Navigation Tabs */}
           <nav className="hidden md:flex items-center space-x-1 rounded-xl bg-dark-800/80 border border-slate-800 p-1">
             <button
               onClick={() => setActiveTab('builder')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'builder'
                   ? 'bg-gradient-to-r from-brand-green/20 to-brand-emerald/10 text-brand-green border border-brand-green/30 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -86,7 +112,7 @@ export const Header: React.FC<Props> = ({
             </button>
             <button
               onClick={() => setActiveTab('single')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'single'
                   ? 'bg-gradient-to-r from-brand-green/20 to-brand-emerald/10 text-brand-green border border-brand-green/30 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -97,7 +123,7 @@ export const Header: React.FC<Props> = ({
             </button>
             <button
               onClick={() => setActiveTab('monitor')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'monitor'
                   ? 'bg-gradient-to-r from-brand-green/20 to-brand-emerald/10 text-brand-green border border-brand-green/30 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -107,7 +133,7 @@ export const Header: React.FC<Props> = ({
             </button>
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'history'
                   ? 'bg-gradient-to-r from-brand-green/20 to-brand-emerald/10 text-brand-green border border-brand-green/30 shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
@@ -117,18 +143,18 @@ export const Header: React.FC<Props> = ({
             </button>
           </nav>
 
-          {/* User Profile Switcher & WhatsApp Connect Status */}
-          <div className="flex items-center gap-3">
+          {/* User Profile Switcher & Desktop WhatsApp Connect Status */}
+          <div className="flex items-center justify-between md:justify-end gap-2 sm:gap-3">
             {/* User Switcher */}
-            <div className="relative flex items-center gap-2">
-              <Users className="h-4 w-4 text-slate-400" />
+            <div className="relative flex items-center gap-1.5 sm:gap-2 flex-1 md:flex-initial">
+              <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400 shrink-0" />
               <select
                 value={activeUser?.id || ''}
                 onChange={(e) => {
                   const found = users.find((u) => u.id === Number(e.target.value));
                   if (found) onSelectUser(found);
                 }}
-                className="rounded-xl border border-slate-700 bg-dark-800 px-3 py-1.5 text-xs font-medium text-slate-200 focus:border-brand-green focus:outline-none"
+                className="w-full md:w-auto rounded-xl border border-slate-700 bg-dark-800 px-2.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-slate-200 focus:border-brand-green focus:outline-none truncate"
               >
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -140,17 +166,17 @@ export const Header: React.FC<Props> = ({
               <button
                 onClick={() => setShowAddUser(true)}
                 title="Add New User Profile"
-                className="rounded-xl border border-slate-700 bg-dark-800 p-1.5 text-slate-300 hover:bg-slate-700 transition-colors"
+                className="rounded-xl border border-slate-700 bg-dark-800 p-1.5 text-slate-300 hover:bg-slate-700 transition-colors shrink-0"
               >
-                <PlusCircle className="h-4 w-4 text-brand-green" />
+                <PlusCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-brand-green" />
               </button>
             </div>
 
-            {/* Connect Button Indicator */}
+            {/* Desktop Connect Button Indicator */}
             {activeUser && (
               <button
                 onClick={onOpenConnectModal}
-                className={`flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-semibold transition-all ${
+                className={`hidden md:flex items-center gap-2 rounded-xl border px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 ${
                   activeUser.instanceStatus === 'open'
                     ? 'border-brand-green/40 bg-brand-green/10 text-brand-green shadow-glow-green/20 hover:bg-brand-green/20'
                     : 'border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'

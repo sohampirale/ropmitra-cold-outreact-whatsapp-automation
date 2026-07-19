@@ -59,21 +59,21 @@ export const SingleMessageSender: React.FC<Props> = ({ activeUser, onMessageSent
   };
 
   return (
-    <div className="glass-card relative rounded-2xl border border-slate-700/80 p-6 shadow-2xl animate-fadeIn">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
+    <div className="glass-card relative rounded-2xl border border-slate-700/80 p-4 sm:p-6 shadow-2xl animate-fadeIn">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-emerald/20 text-brand-green border border-brand-green/30">
-            <MessageSquare className="h-6 w-6" />
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-green/20 to-brand-emerald/20 text-brand-green border border-brand-green/30">
+            <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Direct WhatsApp Sender</h2>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Direct WhatsApp Sender</h2>
+            <p className="text-[11px] sm:text-xs text-slate-400">
               Send instant 1-to-1 messages or schedule single messages via <span className="text-brand-green font-mono">{activeUser.instance_name}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300">
+        <div className="self-start sm:self-auto flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1 text-[11px] sm:text-xs text-slate-300 shrink-0">
           <span className="h-2 w-2 rounded-full bg-brand-green animate-pulse" />
           <span>Active: <span className="font-semibold text-white">{activeUser.name}</span></span>
         </div>
@@ -122,12 +122,12 @@ export const SingleMessageSender: React.FC<Props> = ({ activeUser, onMessageSent
         </div>
 
         {/* Send Mode Selection */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3.5 flex items-center justify-between">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-300">
             {sendNow ? (
-              <Zap className="h-4 w-4 text-brand-green" />
+              <Zap className="h-4 w-4 text-brand-green shrink-0" />
             ) : (
-              <Clock className="h-4 w-4 text-brand-cyan" />
+              <Clock className="h-4 w-4 text-brand-cyan shrink-0" />
             )}
             <div>
               <span className="font-semibold text-white">
@@ -141,7 +141,7 @@ export const SingleMessageSender: React.FC<Props> = ({ activeUser, onMessageSent
             </div>
           </div>
 
-          <div className="flex items-center rounded-lg bg-dark-900 p-1 border border-slate-800 text-xs">
+          <div className="flex items-center self-start sm:self-auto rounded-lg bg-dark-900 p-1 border border-slate-800 text-xs">
             <button
               type="button"
               onClick={() => setSendNow(true)}
