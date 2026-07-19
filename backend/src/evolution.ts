@@ -32,7 +32,7 @@ export class EvolutionService {
           instanceName,
           token: instanceName,
           qrcode: true,
-          Integration: 'WHATSAPP-BAILEYS',
+          integration: 'WHATSAPP-BAILEYS',
         },
         { headers: this.getHeaders(), timeout: 10000 }
       );
