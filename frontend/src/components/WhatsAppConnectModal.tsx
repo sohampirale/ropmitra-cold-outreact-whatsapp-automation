@@ -59,6 +59,10 @@ export const WhatsAppConnectModal: React.FC<Props> = ({
         if (res.data.phoneConnected) setPhone(res.data.phoneConnected);
         if (res.data.status === 'open') {
           onStatusUpdated();
+        } else if (res.data.status === 'connecting') {
+          // Keep QR code updated with fresh token from Evolution API
+          const connRes = await axios.get(`/api/instances/${activeUser.instance_name}/connect`);
+          if (connRes.data.qrCode) setQrCode(connRes.data.qrCode);
         }
       }
     } catch (err) {
