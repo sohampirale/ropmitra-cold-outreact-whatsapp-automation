@@ -8,6 +8,14 @@ import { evolutionService } from '../evolution.js';
 export const apiRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Disable browser caching on API endpoints so QR codes & status poll fresh
+apiRouter.use((_req: Request, res: Response, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // ============================================================================
 // 1. USERS & INSTANCES (MULTI-USER SUPPORT)
 // ============================================================================
