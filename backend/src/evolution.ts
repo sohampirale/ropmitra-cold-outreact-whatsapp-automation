@@ -243,6 +243,11 @@ export class EvolutionService {
         success: true,
       };
     } catch (err: any) {
+      if (err.response?.status === 404) {
+        dbManager.updateInstanceStatus(instanceName, 'disconnected', null);
+        console.error(`[Evolution REST] Instance '${instanceName}' does not exist on remote Evolution API server. Please scan QR code in the browser UI.`);
+        throw new Error(`WhatsApp instance '${instanceName}' is not connected on Evolution API. Please scan QR code in the dashboard first.`);
+      }
       const errorDetail = err.response?.data?.message || err.response?.data?.error || err.message || err;
       console.error(`[Evolution REST] Failed to send message via Evolution API to ${digitsOnly}:`, errorDetail);
       throw new Error(`Evolution API send error: ${typeof errorDetail === 'object' ? JSON.stringify(errorDetail) : errorDetail}`);
