@@ -185,6 +185,71 @@ apiRouter.post('/campaigns/:id/status', (req: Request, res: Response): void => {
 });
 
 // ============================================================================
+// 3. SINGLE MESSAGE (1-TO-1 DIRECT MESSAGING)
+// ============================================================================
+
+apiRouter.post('/messages/send-single', async (req: Request, res: Response): Promise<void> => {
+  const { userId, instanceName, phone: rawPhone, message, sendNow = true } = req.body;
+
+  if (!rawPhone || !message) {
+    res.status(400).json({ error: 'Phone number and message text are required.' });
+    return;
+  }
+
+  // Normalize phone formatting (+91 for 10-digit Indian numbers)
+  let phone = String(rawPhone).trim().replace(/[^0-9+]/g, '');
+  if (phone && !phone.startsWith('+')) {
+    if (phone.length === 10) {
+      phone = '+91' + phone;
+    } else {
+      phone = '+' + phone;
+    }
+  }
+
+  if (!phone || phone.length < 10) {
+    res.status(400).json({ error: 'Invalid phone number format. Please provide a valid 10-digit number or +E.164 number.' });
+    return;
+  }
+
+  let targetUser = userId ? dbManager.getUserById(Number(userId)) : dbManager.getUsers()[0];
+  let instName = instanceName || targetUser?.instance_name || 'ropmitra_inst_1';
+  let uid = targetUser?.id || 1;
+
+  if (sendNow) {
+    try {
+      const sendResult = await evolutionService.sendTextMessage(instName, phone, message);
+      const directCampaign = dbManager.getOrCreateDirectCampaign(uid);
+      const msgRecord = dbManager.createDirectMessageRecord(directCampaign.id, uid, phone, message, 'SENT', null);
+      res.json({
+        success: true,
+        status: 'SENT',
+        messageId: sendResult.id || msgRecord.id,
+        sentTo: phone,
+        sentAt: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      const errMsg = err.message || 'Error sending single message';
+      const directCampaign = dbManager.getOrCreateDirectCampaign(uid);
+      dbManager.createDirectMessageRecord(directCampaign.id, uid, phone, message, 'FAILED', errMsg);
+      res.status(400).json({ error: errMsg, status: 'FAILED' });
+    }
+  } else {
+    try {
+      const campaignName = `Direct Msg to ${phone}`;
+      const campaign = dbManager.createCampaign(uid, campaignName, 5, [{ phone, message }]);
+      res.json({
+        success: true,
+        status: 'QUEUED',
+        campaignId: campaign.id,
+        scheduledFor: phone,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Error queuing single message' });
+    }
+  }
+});
+
+// ============================================================================
 // 3. HISTORY AUDIT TRAIL & CSV EXPORTS
 // ============================================================================
 

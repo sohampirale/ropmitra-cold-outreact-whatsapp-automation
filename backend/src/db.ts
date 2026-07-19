@@ -139,6 +139,10 @@ class DatabaseManager {
     return this.db.prepare('SELECT * FROM users ORDER BY id ASC').all() as User[];
   }
 
+  public getUserById(id: number): User | undefined {
+    return this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as User | undefined;
+  }
+
   public createUser(name: string, email: string, instanceName: string): User {
     const stmt = this.db.prepare('INSERT INTO users (name, email, instance_name) VALUES (?, ?, ?)');
     const res = stmt.run(name, email, instanceName);
@@ -230,6 +234,27 @@ class DatabaseManager {
         UPDATE campaigns SET total_messages = ?, sent_messages = ?, failed_messages = ?, pending_messages = ? WHERE id = ?
       `).run(counts.total || 0, counts.sent || 0, counts.failed || 0, counts.pending || 0, campaignId);
     }
+  }
+
+  public getOrCreateDirectCampaign(userId: number): Campaign {
+    let camp = this.db.prepare("SELECT * FROM campaigns WHERE user_id = ? AND name = 'Direct Single Messages'").get(userId) as Campaign | undefined;
+    if (!camp) {
+      const res = this.db.prepare("INSERT INTO campaigns (user_id, name, status, interval_seconds, total_messages, sent_messages, failed_messages, pending_messages) VALUES (?, 'Direct Single Messages', 'COMPLETED', 0, 0, 0, 0, 0)").run(userId);
+      camp = this.getCampaign(Number(res.lastInsertRowid))!;
+    }
+    return camp;
+  }
+
+  public createDirectMessageRecord(campaignId: number, userId: number, phone: string, message: string, status: 'SENT' | 'FAILED', errorMessage: string | null = null): QueueMessage {
+    const nowEpoch = Math.floor(Date.now() / 1000);
+    const nowIso = new Date().toISOString();
+    const stmt = this.db.prepare(`
+      INSERT INTO messages (campaign_id, user_id, phone, message, status, error_message, scheduled_at, sent_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const res = stmt.run(campaignId, userId, phone, message, status, errorMessage, nowEpoch, status === 'SENT' ? nowIso : null);
+    this.syncCampaignCounts(campaignId);
+    return this.db.prepare('SELECT * FROM messages WHERE id = ?').get(res.lastInsertRowid) as QueueMessage;
   }
 
   // Messages

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Header } from './components/Header';
 import { WhatsAppConnectModal } from './components/WhatsAppConnectModal';
 import { CampaignBuilder } from './components/CampaignBuilder';
+import { SingleMessageSender } from './components/SingleMessageSender';
 import { LiveQueueMonitor } from './components/LiveQueueMonitor';
 import { HistoryAudit } from './components/HistoryAudit';
 import { UserProfile } from './types';
@@ -10,7 +11,7 @@ import { UserProfile } from './types';
 export const App: React.FC = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [activeUser, setActiveUser] = useState<UserProfile | null>(null);
-  const [activeTab, setActiveTab] = useState<'builder' | 'monitor' | 'history'>('builder');
+  const [activeTab, setActiveTab] = useState<'builder' | 'single' | 'monitor' | 'history'>('builder');
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isMockMode, setIsMockMode] = useState(false);
 
@@ -53,7 +54,7 @@ export const App: React.FC = () => {
         isMockMode={isMockMode}
       />
 
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-6 pb-24 md:pb-8">
         {!activeUser ? (
           <div className="text-center py-16 text-xs text-slate-400">Loading user profiles...</div>
         ) : (
@@ -63,6 +64,12 @@ export const App: React.FC = () => {
                 activeUser={activeUser}
                 onCampaignCreated={() => setActiveTab('monitor')}
                 onOpenConnectModal={() => setIsConnectModalOpen(true)}
+              />
+            )}
+            {activeTab === 'single' && (
+              <SingleMessageSender
+                activeUser={activeUser}
+                onMessageSent={() => {}}
               />
             )}
             {activeTab === 'monitor' && <LiveQueueMonitor activeUser={activeUser} />}

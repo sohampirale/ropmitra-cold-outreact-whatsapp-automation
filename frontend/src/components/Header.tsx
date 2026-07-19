@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Users, PlusCircle, Wifi, WifiOff, Sparkles } from 'lucide-react';
+import { MessageSquare, Users, PlusCircle, Wifi, WifiOff, Sparkles, Send } from 'lucide-react';
 import { UserProfile } from '../types';
 
 interface Props {
@@ -8,8 +8,8 @@ interface Props {
   onSelectUser: (user: UserProfile) => void;
   onCreateUser: (name: string, email: string) => Promise<void>;
   onOpenConnectModal: () => void;
-  activeTab: 'builder' | 'monitor' | 'history';
-  setActiveTab: (tab: 'builder' | 'monitor' | 'history') => void;
+  activeTab: 'builder' | 'single' | 'monitor' | 'history';
+  setActiveTab: (tab: 'builder' | 'single' | 'monitor' | 'history') => void;
   isMockMode: boolean;
 }
 
@@ -82,7 +82,18 @@ export const Header: React.FC<Props> = ({
               }`}
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Campaign Builder
+              CSV Campaign Builder
+            </button>
+            <button
+              onClick={() => setActiveTab('single')}
+              className={`flex items-center gap-2 rounded-lg px-4 py-1.5 text-xs font-medium transition-all ${
+                activeTab === 'single'
+                  ? 'bg-gradient-to-r from-brand-green/20 to-brand-emerald/10 text-brand-green border border-brand-green/30 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Send className="h-3.5 w-3.5" />
+              Direct 1-to-1 Sender
             </button>
             <button
               onClick={() => setActiveTab('monitor')}
@@ -161,25 +172,43 @@ export const Header: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Mobile Navigation Bar */}
-        <div className="flex md:hidden items-center justify-around border-t border-slate-800 py-2">
+        {/* Mobile Fixed Bottom Navigation Bar */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around border-t border-slate-800 bg-dark-900/95 backdrop-blur-xl py-2 px-1 shadow-2xl">
           <button
             onClick={() => setActiveTab('builder')}
-            className={`text-xs font-medium ${activeTab === 'builder' ? 'text-brand-green' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${
+              activeTab === 'builder' ? 'text-brand-green bg-brand-green/10 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
-            Campaign Builder
+            <Sparkles className="h-4 w-4" />
+            <span className="text-[10px]">CSV Builder</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('single')}
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${
+              activeTab === 'single' ? 'text-brand-green bg-brand-green/10 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Send className="h-4 w-4" />
+            <span className="text-[10px]">1-to-1 Send</span>
           </button>
           <button
             onClick={() => setActiveTab('monitor')}
-            className={`text-xs font-medium ${activeTab === 'monitor' ? 'text-brand-green' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${
+              activeTab === 'monitor' ? 'text-brand-green bg-brand-green/10 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
-            Monitor
+            <Wifi className="h-4 w-4" />
+            <span className="text-[10px]">Monitor</span>
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`text-xs font-medium ${activeTab === 'history' ? 'text-brand-green' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${
+              activeTab === 'history' ? 'text-brand-green bg-brand-green/10 font-bold' : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
-            Audit & Export
+            <Users className="h-4 w-4" />
+            <span className="text-[10px]">Audit</span>
           </button>
         </div>
       </div>
