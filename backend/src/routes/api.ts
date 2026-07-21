@@ -72,14 +72,22 @@ apiRouter.get('/instances/:instanceName/status', async (req: Request, res: Respo
 apiRouter.post('/instances/:instanceName/simulate-connect', async (req: Request, res: Response): Promise<void> => {
   const { instanceName } = req.params;
   const { phone } = req.body;
-  await evolutionService.simulateMockConnect(instanceName, phone || '+919876543210');
-  res.json({ success: true, status: 'open', phoneConnected: phone || '+919876543210' });
+  try {
+    await evolutionService.simulateMockConnect(instanceName, phone || '+919876543210');
+    res.json({ success: true, status: 'open', phoneConnected: phone || '+919876543210' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to simulate connect' });
+  }
 });
 
 apiRouter.post('/instances/:instanceName/logout', async (req: Request, res: Response): Promise<void> => {
   const { instanceName } = req.params;
-  await evolutionService.logoutInstance(instanceName);
-  res.json({ success: true, status: 'disconnected' });
+  try {
+    await evolutionService.logoutInstance(instanceName);
+    res.json({ success: true, status: 'disconnected' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to logout instance' });
+  }
 });
 
 // ============================================================================
