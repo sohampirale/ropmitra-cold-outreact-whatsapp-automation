@@ -27,13 +27,21 @@ export const WhatsAppConnectModal: React.FC<Props> = ({
   const [mockPhoneInput, setMockPhoneInput] = useState('+919876543210');
 
   useEffect(() => {
+    if (isOpen) {
+      setQrCode(activeUser.qrCode);
+      setStatus(activeUser.instanceStatus);
+      setPhone(activeUser.phoneConnected);
+    }
+  }, [isOpen, activeUser.id, activeUser.instance_name, activeUser.instanceStatus, activeUser.qrCode, activeUser.phoneConnected]);
+
+  useEffect(() => {
     if (!isOpen) return;
     fetchQrCode();
     const pollInterval = setInterval(() => {
       checkStatus();
     }, 4000);
     return () => clearInterval(pollInterval);
-  }, [isOpen, activeUser.instance_name]);
+  }, [isOpen, activeUser.id, activeUser.instance_name]);
 
   const fetchQrCode = async () => {
     setLoading(true);
