@@ -8,6 +8,35 @@ import { evolutionService } from '../evolution.js';
 export const apiRouter = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper to normalize phone numbers (+91 for 10-digit Indian numbers, handling leading zeroes like 09876543210)
+export function normalizePhoneNumber(rawPhone: string): string {
+  let phone = String(rawPhone || '').trim().replace(/[^0-9+]/g, '');
+  if (!phone) return '';
+
+  if (phone.startsWith('+')) {
+    if (/^\+0+/.test(phone)) {
+      const digitsOnly = phone.slice(1).replace(/^0+/, '');
+      if (digitsOnly.length === 10) {
+        return '+91' + digitsOnly;
+      }
+      return '+' + digitsOnly;
+    }
+    return phone;
+  }
+
+  if (phone.startsWith('00')) {
+    phone = phone.slice(2);
+  } else if (phone.startsWith('0') && phone.length === 11) {
+    phone = phone.slice(1);
+  }
+
+  if (phone.length === 10) {
+    return '+91' + phone;
+  }
+
+  return '+' + phone;
+}
+
 // Disable browser caching on API endpoints so QR codes & status poll fresh
 apiRouter.use((_req: Request, res: Response, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -124,15 +153,8 @@ apiRouter.post('/campaigns/preview-csv', upload.single('csv'), (req: Request, re
         let rawPhone = String(row[phoneCol] || '').trim();
         const message = msgCol ? String(row[msgCol] || '').trim() : '';
 
-        // Normalize +91 formatting
-        let phone = rawPhone.replace(/[^0-9+]/g, '');
-        if (phone && !phone.startsWith('+')) {
-          if (phone.length === 10) {
-            phone = '+91' + phone;
-          } else {
-            phone = '+' + phone;
-          }
-        }
+        // Normalize +91 formatting (handling leading zeroes like 09876543210)
+        let phone = normalizePhoneNumber(rawPhone);
 
         const isValid = Boolean(phone && phone.length >= 10 && message.length > 0);
         let reason = undefined;
@@ -211,15 +233,8 @@ apiRouter.post('/messages/send-single', async (req: Request, res: Response): Pro
     return;
   }
 
-  // Normalize phone formatting (+91 for 10-digit Indian numbers)
-  let phone = String(rawPhone).trim().replace(/[^0-9+]/g, '');
-  if (phone && !phone.startsWith('+')) {
-    if (phone.length === 10) {
-      phone = '+91' + phone;
-    } else {
-      phone = '+' + phone;
-    }
-  }
+  // Normalize phone formatting (+91 for 10-digit Indian numbers, handling leading zeroes like 09876543210)
+  let phone = normalizePhoneNumber(rawPhone);
 
   if (!phone || phone.length < 10) {
     res.status(400).json({ error: 'Invalid phone number format. Please provide a valid 10-digit number or +E.164 number.' });
