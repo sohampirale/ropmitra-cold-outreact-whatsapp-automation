@@ -107,6 +107,7 @@ class DatabaseManager {
 
       CREATE INDEX IF NOT EXISTS idx_messages_status_scheduled ON messages(status, scheduled_at);
       CREATE INDEX IF NOT EXISTS idx_messages_campaign ON messages(campaign_id);
+      CREATE INDEX IF NOT EXISTS idx_whatsapp_instances_status ON whatsapp_instances(status);
     `);
   }
 
@@ -275,10 +276,13 @@ class DatabaseManager {
       SELECT m.*
       FROM messages m
       JOIN campaigns c ON c.id = m.campaign_id
+      JOIN users u ON u.id = m.user_id
+      JOIN whatsapp_instances wi ON wi.instance_name = u.instance_name
       WHERE m.status = 'PENDING'
         AND m.scheduled_at <= ?
         AND c.status = 'RUNNING'
-      ORDER BY m.scheduled_at ASC
+        AND wi.status = 'open'
+      ORDER BY m.scheduled_at ASC, m.id ASC
       LIMIT 1
     `).get(nowEpoch) as QueueMessage | undefined;
   }

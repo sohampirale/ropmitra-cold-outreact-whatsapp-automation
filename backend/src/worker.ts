@@ -35,9 +35,16 @@ export class QueueWorker {
       }
 
       // Find user & whatsapp instance
-      const users = dbManager.getUsers();
-      const user = users.find((u) => u.id === nextMessage.user_id) || users[0];
+      const user = dbManager.getUserById(nextMessage.user_id);
       const instanceName = user?.instance_name || 'ropmitra_inst_1';
+
+      // Defensive check: Verify instance exists and is open
+      const instance = dbManager.getInstance(instanceName);
+      if (!instance || instance.status !== 'open') {
+        console.warn(`[QueueWorker] Skipping message #${nextMessage.id} for user #${nextMessage.user_id} - Instance '${instanceName}' status is '${instance?.status || 'disconnected'}'. Keeping message PENDING.`);
+        this.isProcessing = false;
+        return;
+      }
 
       console.log(`[QueueWorker] Processing message #${nextMessage.id} to ${nextMessage.phone} for campaign #${nextMessage.campaign_id}`);
 
@@ -46,9 +53,15 @@ export class QueueWorker {
         dbManager.markMessageSent(nextMessage.id, nextMessage.campaign_id);
         console.log(`[QueueWorker] Successfully delivered message #${nextMessage.id} to ${nextMessage.phone}`);
       } catch (error: any) {
-        const errorMsg = error?.message || 'Failed to send WhatsApp message';
-        console.error(`[QueueWorker] Failed message #${nextMessage.id}: ${errorMsg}`);
-        dbManager.markMessageFailed(nextMessage.id, nextMessage.campaign_id, errorMsg);
+        // Re-check instance status to see if send failed because instance became disconnected during execution
+        const recheckedInst = dbManager.getInstance(instanceName);
+        if (recheckedInst && recheckedInst.status !== 'open') {
+          console.warn(`[QueueWorker] Send attempt failed for message #${nextMessage.id} due to instance '${instanceName}' disconnection. Message remains PENDING.`);
+        } else {
+          const errorMsg = error?.message || 'Failed to send WhatsApp message';
+          console.error(`[QueueWorker] Failed message #${nextMessage.id}: ${errorMsg}`);
+          dbManager.markMessageFailed(nextMessage.id, nextMessage.campaign_id, errorMsg);
+        }
       }
     } catch (err: any) {
       console.error(`[QueueWorker] Uncaught worker error:`, err?.message || err);
