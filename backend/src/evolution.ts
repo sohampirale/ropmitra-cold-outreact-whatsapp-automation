@@ -92,9 +92,16 @@ export class EvolutionService {
       }
 
       // Extract Base64 QR code image string from various Evolution API response formats
-      let rawQr = data.base64 || data.code || data.qrcode?.base64 || data.qrcode?.code || data.pairingCode || null;
-      if (rawQr && typeof rawQr === 'string' && !rawQr.startsWith('data:')) {
-        rawQr = `data:image/png;base64,${rawQr}`;
+      let rawQr = data.base64 || data.qrcode?.base64 || data.code || data.qrcode?.code || data.pairingCode || null;
+      if (rawQr && typeof rawQr === 'string') {
+        rawQr = rawQr.trim();
+        if (!rawQr.startsWith('data:')) {
+          // Only prepend data:image/png;base64, if it's base64 image data (and not a raw QR string containing '@')
+          const isBase64Image = /^[A-Za-z0-9+/=\s]+$/.test(rawQr) && !rawQr.includes('@');
+          if (isBase64Image) {
+            rawQr = `data:image/png;base64,${rawQr}`;
+          }
+        }
       }
 
       dbManager.updateInstanceStatus(instanceName, 'connecting', rawQr);
