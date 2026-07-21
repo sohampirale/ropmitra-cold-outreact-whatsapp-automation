@@ -14,12 +14,19 @@ export const LiveQueueMonitor: React.FC<Props> = ({ activeUser }) => {
   const [loading, setLoading] = useState(false);
   const [nextSendCountDown, setNextSendCountDown] = useState<number | null>(null);
 
+  const selectedCampaignIdRef = React.useRef(selectedCampaignId);
   useEffect(() => {
+    selectedCampaignIdRef.current = selectedCampaignId;
+  }, [selectedCampaignId]);
+
+  useEffect(() => {
+    setSelectedCampaignId(null);
+    setMessages([]);
     fetchCampaigns();
     const interval = setInterval(() => {
       fetchCampaigns(true);
-      if (selectedCampaignId) {
-        fetchMessages(selectedCampaignId, true);
+      if (selectedCampaignIdRef.current) {
+        fetchMessages(selectedCampaignIdRef.current, true);
       }
     }, 4000);
     return () => clearInterval(interval);
