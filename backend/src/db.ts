@@ -166,11 +166,19 @@ class DatabaseManager {
     qrCode: string | null = null,
     phoneConnected: string | null = null
   ) {
-    this.db.prepare(`
-      UPDATE whatsapp_instances
-      SET status = ?, qr_code = ?, phone_connected = COALESCE(?, phone_connected), updated_at = CURRENT_TIMESTAMP
-      WHERE instance_name = ?
-    `).run(status, qrCode, phoneConnected, instanceName);
+    if (status === 'disconnected') {
+      this.db.prepare(`
+        UPDATE whatsapp_instances
+        SET status = ?, qr_code = ?, phone_connected = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE instance_name = ?
+      `).run(status, qrCode, instanceName);
+    } else {
+      this.db.prepare(`
+        UPDATE whatsapp_instances
+        SET status = ?, qr_code = ?, phone_connected = COALESCE(?, phone_connected), updated_at = CURRENT_TIMESTAMP
+        WHERE instance_name = ?
+      `).run(status, qrCode, phoneConnected, instanceName);
+    }
   }
 
   // Campaigns
