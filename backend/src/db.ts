@@ -213,9 +213,13 @@ class DatabaseManager {
 
   public updateCampaignStatus(id: number, status: 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'CANCELLED') {
     this.db.prepare('UPDATE campaigns SET status = ? WHERE id = ?').run(status, id);
+    this.syncCampaignCounts(id);
   }
 
   public syncCampaignCounts(campaignId: number) {
+    const campaign = this.getCampaign(campaignId);
+    if (!campaign) return;
+
     const counts = this.db.prepare(`
       SELECT 
         COUNT(*) as total,
@@ -225,15 +229,19 @@ class DatabaseManager {
       FROM messages WHERE campaign_id = ?
     `).get(campaignId) as { total: number; sent: number; failed: number; pending: number };
 
-    const status = counts.pending === 0 ? 'COMPLETED' : undefined;
-    if (status) {
+    const total = counts.total || 0;
+    const sent = counts.sent || 0;
+    const failed = counts.failed || 0;
+    const pending = counts.pending || 0;
+
+    if (campaign.status === 'RUNNING' && pending === 0) {
       this.db.prepare(`
-        UPDATE campaigns SET total_messages = ?, sent_messages = ?, failed_messages = ?, pending_messages = ?, status = ? WHERE id = ?
-      `).run(counts.total || 0, counts.sent || 0, counts.failed || 0, counts.pending || 0, status, campaignId);
+        UPDATE campaigns SET total_messages = ?, sent_messages = ?, failed_messages = ?, pending_messages = ?, status = 'COMPLETED' WHERE id = ?
+      `).run(total, sent, failed, pending, campaignId);
     } else {
       this.db.prepare(`
         UPDATE campaigns SET total_messages = ?, sent_messages = ?, failed_messages = ?, pending_messages = ? WHERE id = ?
-      `).run(counts.total || 0, counts.sent || 0, counts.failed || 0, counts.pending || 0, campaignId);
+      `).run(total, sent, failed, pending, campaignId);
     }
   }
 
