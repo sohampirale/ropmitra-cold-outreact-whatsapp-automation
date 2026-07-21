@@ -105,7 +105,7 @@ class DatabaseManager {
         FOREIGN KEY(campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
       );
 
-      CREATE INDEX IF NOT EXISTS idx_messages_status_scheduled ON messages(status, scheduled_at);
+      CREATE INDEX IF NOT EXISTS idx_messages_status_scheduled_id ON messages(status, scheduled_at, id);
       CREATE INDEX IF NOT EXISTS idx_messages_campaign ON messages(campaign_id);
       CREATE INDEX IF NOT EXISTS idx_whatsapp_instances_status ON whatsapp_instances(status);
     `);
