@@ -105,35 +105,42 @@ apiRouter.post('/campaigns/preview-csv', upload.single('csv'), (req: Request, re
       columns: true,
       skip_empty_lines: true,
       trim: true,
-    });
+    }) as Record<string, string>[];
 
     const parsedRows: Array<{ phone: string; message: string; isValid: boolean; reason?: string }> = [];
 
-    for (const row of records as Record<string, string>[]) {
-      // Find phone column (phone, phone_no, phone_number, mobile, number, etc.)
-      const phoneCol = Object.keys(row).find((k) => /phone|mobile|number|no/i.test(k)) || Object.keys(row)[0];
-      // Find message column (message, msg, text, content, etc.)
-      const msgCol = Object.keys(row).find((k) => /message|msg|text|content/i.test(k)) || Object.keys(row)[1];
+    if (records.length > 0) {
+      const headers = Object.keys(records[0] || {});
 
-      let rawPhone = String(row[phoneCol] || '').trim();
-      const message = String(row[msgCol] || '').trim();
+      // Find phone column matching standard keywords
+      let phoneCol = headers.find((k) => /phone|mobile|whatsapp|contact|^number$/i.test(k.trim())) || headers[0];
 
-      // Normalize +91 formatting
-      let phone = rawPhone.replace(/[^0-9+]/g, '');
-      if (phone && !phone.startsWith('+')) {
-        if (phone.length === 10) {
-          phone = '+91' + phone;
-        } else {
-          phone = '+' + phone;
+      // Find message column matching standard keywords, ensuring distinctness from phoneCol
+      let msgCol =
+        headers.find((k) => k !== phoneCol && /message|msg|text|body|content|template/i.test(k.trim())) ||
+        headers.find((k) => k !== phoneCol);
+
+      for (const row of records) {
+        let rawPhone = String(row[phoneCol] || '').trim();
+        const message = msgCol ? String(row[msgCol] || '').trim() : '';
+
+        // Normalize +91 formatting
+        let phone = rawPhone.replace(/[^0-9+]/g, '');
+        if (phone && !phone.startsWith('+')) {
+          if (phone.length === 10) {
+            phone = '+91' + phone;
+          } else {
+            phone = '+' + phone;
+          }
         }
+
+        const isValid = Boolean(phone && phone.length >= 10 && message.length > 0);
+        let reason = undefined;
+        if (!phone) reason = 'Missing phone number';
+        else if (!message) reason = 'Missing message text';
+
+        parsedRows.push({ phone, message, isValid, reason });
       }
-
-      const isValid = Boolean(phone && phone.length >= 10 && message.length > 0);
-      let reason = undefined;
-      if (!phone) reason = 'Missing phone number';
-      else if (!message) reason = 'Missing message text';
-
-      parsedRows.push({ phone, message, isValid, reason });
     }
 
     res.json({ success: true, totalRows: parsedRows.length, rows: parsedRows });
